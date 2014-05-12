@@ -3,141 +3,222 @@
 /**
 <% include doc.cc.ejs -%>
  */
-Handle<Value> <%- cppClassName %>::<%- functionInfo.cppFunctionName %>(const Arguments& args) {
-  HandleScope scope;
-  <% var jsArg; -%>
-  <% include guardArguments.cc.ejs -%>
-
-  if (args.Length() == <%- jsArg %> || !args[<%- jsArg %>]->IsFunction()) {
-    return ThrowException(Exception::Error(String::New("Callback is required and must be a Function.")));
-  }
-
-  <%- functionInfo.cppFunctionName %>Baton* baton = new <%- functionInfo.cppFunctionName %>Baton;
-  baton->error_code = GIT_OK;
-  baton->error = NULL;
-  baton->request.data = baton;
+<% if (functionInfo.isAsync) { -%>
+class <%- functionInfo.cppFunctionName %>Worker : public NanAsyncWorker {
+  public:
+    <%- functionInfo.cppFunctionName %>Worker(NanCallback *callback
 <%
-    for (var cArg = 0, jsArg = 0; cArg < functionInfo.args.length; cArg++) {
-      var arg = functionInfo.args[cArg];
+for (var i = 0; i < functionInfo.args.length; i++) {
+  var arg = functionInfo.args[i];
+  if (!arg.isReturn) {
 -%>
-<% if (!arg.isReturn) { -%>
-<% if (arg.isSelf) { -%>
-  baton-><%- arg.name %>Reference = Persistent<Value>::New(args.This());
-  baton-><%- arg.name %> = ObjectWrap::Unwrap<<%- cppClassName %>>(args.This())->GetValue();
-<% } else { -%>
-  baton-><%- arg.name %>Reference = Persistent<Value>::New(args[<%- jsArg %>]);
-  <% include convertFromV8.cc.ejs -%>
-  <% if (!arg.isPayload) { -%>
-  baton-><%- arg.name %> = from_<%- arg.name %>;
-  <% } -%>
-<% } -%>
-<% if (!(arg.isReturn || arg.isSelf || arg.isPayload)) jsArg++; -%>
-<% } else { -%>
-<% if (arg.shouldAlloc) { -%>
-  baton-><%- arg.name %> = (<%- arg.cType %>)malloc(sizeof(<%- arg.cType.replace('*', '') %>));
-<% } else { -%>
-<% } -%>
-<% } -%>
-<% } -%>
-  baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[<%- jsArg %>]));
-
-  uv_queue_work(uv_default_loop(), &baton->request, <%- functionInfo.cppFunctionName %>Work, (uv_after_work_cb)<%- functionInfo.cppFunctionName %>AfterWork);
-
-  return Undefined();
+      , Local<Object> <%- arg.name %>Reference
+<%
+  }
 }
-
-void <%- cppClassName %>::<%- functionInfo.cppFunctionName %>Work(uv_work_t *req) {
-  <%- functionInfo.cppFunctionName %>Baton *baton = static_cast<<%- functionInfo.cppFunctionName %>Baton *>(req->data);
-  <% if (functionInfo.return.cType != "void" || functionInfo.return.isErrorCode) { %><%- functionInfo.return.cType %> result = <% } %><%- functionInfo.cFunctionName %>(
+-%>
+    ) : NanAsyncWorker(callback), error_code(GIT_OK) {
 <%
   for (var i = 0; i < functionInfo.args.length; i++) {
     var arg = functionInfo.args[i];
+    if (!arg.isReturn) {
 -%>
-    <% if (arg.isReturn && /\*\*/.test(arg.cType)) { %>&<% } %>baton-><%- arg.name %><% if (i < functionInfo.args.length - 1) { %>, <% } %>
-<% } -%>
-  );
-<% if (functionInfo.return.isErrorCode) { -%>
-  baton->error_code = result;
-  if (result != GIT_OK && giterr_last() != NULL) {
-    baton->error = git_error_dup(giterr_last());
-  }
-<% } else if (functionInfo.return.cType != "void") { -%>
-  baton->result = result;
-<% } -%>
-}
-
-void <%- cppClassName %>::<%- functionInfo.cppFunctionName %>AfterWork(uv_work_t *req) {
-  HandleScope scope;
-  <%- functionInfo.cppFunctionName %>Baton *baton = static_cast<<%- functionInfo.cppFunctionName %>Baton *>(req->data);
-
-  TryCatch try_catch;
-  if (baton->error_code == GIT_OK) {
-<% if (!returns.length) { -%>
-    Handle<Value> result = Local<Value>::New(Undefined());
-<% } else if (returns.length == 1) { -%>
-<% var to = {}; to.__proto__ = returns[0]; to.name = "baton->" + to.name; -%>
-  Handle<Value> to;
-  <% include convertToV8.cc.ejs -%>
-  Handle<Value> result = to;
-<% } else { -%>
-  Handle<Object> result = Object::New();
-  Handle<Value> to;
+      SaveToPersistent("<%- arg.name %>", <%- arg.name %>Reference);
 <%
-  for (r in returns) {
-    var to = returns[r];
+    }
+  }
+-%>
+    }
+    ~<%- functionInfo.cppFunctionName %>Worker() {}
+
+    void HandleOKCallback() {
+      TryCatch try_catch;
+      if(this->error_code == GIT_OK) {
+<%
+if (!returns.length) {
+-%>
+        callback->Call(0, NULL);
+<%
+} else {
+    if (returns.length == 1) {
+  var to = {}; to.__proto__ = returns[0]; to.name = "this->" + to.name;
+-%>
+      Handle<Value> to;
+      <% include convertToV8.cc.ejs -%>
+      Handle<Value> result = to;
+<%
+    } else {
+-%>
+      Handle<Object> result = NanNew<Object>();
+      Handle<Value> to;
+<%
+      for (r in returns) {
+        var to = returns[r];
 -%>
     <% include convertToV8.cc.ejs -%>
-    result->Set(String::NewSymbol("<%- to.jsName || to.name %>"), to);
-<% } -%>
-<% } -%>
+    result->Set(NanSymbol("<%- to.jsName || to.name %>"), to);
+<%
+      }
+-%>
     Handle<Value> argv[2] = {
-      Local<Value>::New(Null()),
+      NanNew(NanNull()),
       result
     };
-    baton->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+    callback->Call(2, argv);
+<%
+  }
+-%>
   } else {
-    if (baton->error) {
-      Handle<Value> argv[1] = {
-        Exception::Error(String::New(baton->error->message))
-      };
-      baton->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-      if (baton->error->message)
-        free((void *)baton->error->message);
-      free((void *)baton->error);
-    } else {
-      baton->callback->Call(Context::GetCurrent()->Global(), 0, NULL);
-    }
-    <%
-        for (var i = 0; i < functionInfo.args.length; i++) {
-          var arg = functionInfo.args[i];
-          if (!arg.shouldAlloc) continue;
-    -%>
-    free(baton-><%= arg.name %>);
-    <% } -%>
+<%
+    for (var i = 0; i < functionInfo.args.length; i++) {
+      var arg = functionInfo.args[i];
+      if (!arg.shouldAlloc) continue;
+-%>
+    free(this-><%= arg.name %> );
+    <% } %>
   }
 
   if (try_catch.HasCaught()) {
     node::FatalException(try_catch);
   }
 <%
-    for (var i = 0, j = 0; i < functionInfo.args.length; i++) {
+    for (var i = 0; i < functionInfo.args.length; i++) {
       var arg = functionInfo.args[i];
-      if (arg.isReturn) continue;
+      if (['String', 'Array'].indexOf(arg.cppClassName) > -1) {
+        if (arg.freeFunctionName) {
 -%>
-  baton-><%- arg.name %>Reference.Dispose();
-<% } -%>
-  baton->callback.Dispose();
+    <%- arg.freeFunctionName %>(this-><%- arg.name %>);
+<%
+        } else {
+-%>
+  free((void *)this-><%- arg.name %>);<%
+        }
+      }
+    }
+-%>
+  //delete baton;
+      // normal callback...
+      //NanScope();
+
+      //Local<Value> argv[] = {
+      //  NanNew(NanNull()),
+      //  NanNewBufferHandle((char*)resultdata, resultsize)
+      //};
+
+      //callback->Call(2, argv);
+    }
+
+    void Execute() {
+<%
+  if (functionInfo.return.cType != "void" || functionInfo.return.isErrorCode) {
+    // call git function
+%>
+      <%- functionInfo.return.cType %> result = <% } %><%- functionInfo.cFunctionName %>(<%
+  // print args
+    for (var i = 0; i < functionInfo.args.length; i++) {
+      var arg = functionInfo.args[i];
+      if (arg.isReturn && /\*\*/.test(arg.cType)) {
+        %>&<%
+      }
+      %>this-><%- arg.name %><%
+      if(i < functionInfo.args.length - 1) {
+        %>, <%
+      }
+    } -%> );
+
+<%
+    if (functionInfo.return.isErrorCode) {
+-%>
+      this->error_code = result;
+      const git_error* err;
+      if (result != GIT_OK && (err = giterr_last()) != NULL) {
+        SetErrorMessage(err->message);
+      }
+<%
+    } else if (functionInfo.return.cType != "void") {
+-%>
+      this->result = result;
+<%
+    }
+  // end: Execute
+-%>
+    }
+
+  private:
 <%
     for (var i = 0; i < functionInfo.args.length; i++) {
       var arg = functionInfo.args[i];
+      if (arg.isReturn) {
 -%>
-<% if (['String', 'Array'].indexOf(arg.cppClassName) > -1) { -%>
-<% if (arg.freeFunctionName) { %>
-  <%- arg.freeFunctionName %>(baton-><%- arg.name %>);
-<% } else { -%>
-  free((void *)baton-><%- arg.name %>);
-<% } -%>
-<% } -%>
-<% } -%>
-  delete baton;
+    <%- arg.cType.replace('**', '*') %> <%- arg.name %>;
+<%
+      } else {
+-%>
+    <%- arg.cType %> <%- arg.name %>;
+<%
+      }
+    }
+-%>
+    int error_code;
+    //const git_error* error;
+};
+
+<%
+  }
+}
+-%>
+
+
+NAN_METHOD(<%- cppClassName %>::<%- functionInfo.cppFunctionName %>) {
+  NanScope();
+<% var jsArg; -%>
+  <% include guardArguments.cc.ejs %>
+  if (args.Length() == <%- jsArg %> || !args[<%- jsArg %>]->IsFunction()) {
+    NanThrowError("Callback is required and must be a Function.");
+  }
+<%
+    for (var cArg = 0, jsArg = 0; cArg < functionInfo.args.length; cArg++) {
+      var arg = functionInfo.args[cArg];
+      if (!arg.isReturn) {
+        if (arg.isSelf) {
+-%>
+  //this-><%- arg.name %>Reference = Persistent<Value>::New(args.This());
+  <%- cppClassName %>* <%- arg.name %> = ObjectWrap::Unwrap<<%- cppClassName %>>(args.This())->GetValue();
+<%
+        } else {
+-%>
+  //baton-><%- arg.name %>Reference = Persistent<Value>::New(args[<%- jsArg %>]);
+  //convert: <% include convertFromV8.cc.ejs -%>
+<%
+          if(!arg.isPayload) {
+-%>
+  //baton-><%- arg.name %> = from_<%- arg.name %>;
+<%
+          }
+        }
+        if (!(arg.isReturn || arg.isSelf || arg.isPayload)) jsArg++;
+      } else {
+        if (arg.shouldAlloc) {
+-%>
+  this-><%- arg.name %> = (<%- arg.cType %>)malloc(sizeof(<%- arg.cType.replace('*', '') %>));
+<%
+        } else {
+        }
+      }
+    } -%>
+  NanCallback *callback = new NanCallback(args[<%- jsArg %>].As<v8::Function>());
+  NanAsyncQueueWorker(new <%- functionInfo.cppFunctionName %>Worker(callback
+<%
+for (var i = 0; i < functionInfo.args.length; i++) {
+  var arg = functionInfo.args[i];
+  if (!arg.isReturn) {
+-%>
+      , <%- arg.name %>
+<%
+  }
+}
+-%>
+  );
+
+  NanReturnUndefined();
 }

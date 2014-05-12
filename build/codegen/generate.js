@@ -7,11 +7,13 @@ var idefs = require("./v0.18.0.json");
 var classTemplate = ejs.compile(
   "" + fs.readFileSync(String(__dirname + "/templates/class.cc.ejs")), {
     filename: "class.cc"
+    ,compileDebug: false
   });
 
 var headerTemplate = ejs.compile(
   "" + fs.readFileSync(String(__dirname + "/templates/header.h.ejs")), {
     filename: "header.h"
+    // ,compileDebug: true
   });
 
 Object.keys(idefs).forEach(function(keyName) {

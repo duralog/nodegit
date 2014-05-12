@@ -1,11 +1,13 @@
+
 <% if (!arg.isPayload) { -%>
   <%- arg.cType %> from_<%- arg.name %>;
   <% if (arg.isOptional) { -%>
     if (args[<%- jsArg %>]->Is<%- cppClassName2v8ValueClassName(arg.cppClassName) %>()) {
   <% } -%>
     <% if (arg.cppClassName == 'String') { -%>
-      String::Utf8Value <%- arg.name %>(args[<%- jsArg %>]->ToString());
-      from_<%- arg.name %> = strdup(*<%- arg.name %>);
+      //String::Utf8Value <%- arg.name %>(args[<%- jsArg %>]->ToString());
+      //from_<%- arg.name %> = strdup(*<%- arg.name %>);
+      from_<%- arg.name %> = strdup(NanCString(args[<%- jsArg %>]->ToString(), NULL));
     <% } else if (arg.cppClassName == 'Array') { -%>
       Array *tmp_<%- arg.name %> = Array::Cast(*args[<%- jsArg %>]);
       from_<%- arg.name %> = (<%- arg.cType %>)malloc(tmp_<%- arg.name %>->Length() * sizeof(<%- arg.cType.replace('**', '*') %>));

@@ -5,8 +5,8 @@
     if (fieldInfo.ignore) continue;
 -%>
 
-Handle<Value> <%- cppClassName %>::<%- fieldInfo.cppFunctionName %>(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(<%- cppClassName %>::<%- fieldInfo.cppFunctionName %>) {
+  NanScope();
   <% var to = fieldInfo; -%>
   Handle<Value> to;
 
