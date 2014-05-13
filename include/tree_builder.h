@@ -28,30 +28,23 @@ class GitTreeBuilder : public ObjectWrap {
     GitTreeBuilder(git_treebuilder *raw);
     ~GitTreeBuilder();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Create(const Arguments& args);
-    static Handle<Value> Clear(const Arguments& args);
-    static Handle<Value> Size(const Arguments& args);
-    static Handle<Value> Get(const Arguments& args);
-    static Handle<Value> Insert(const Arguments& args);
-    static Handle<Value> GitTreebuilderRemove(const Arguments& args);
-    static Handle<Value> Write(const Arguments& args);
-    static void WriteWork(uv_work_t* req);
-    static void WriteAfterWork(uv_work_t* req);
+    static NAN_METHOD(Create);
 
-    struct WriteBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_oid * id;
-      Persistent<Value> repoReference;
-      git_repository * repo;
-      Persistent<Value> bldReference;
-      git_treebuilder * bld;
-      Persistent<Function> callback;
-    };
+    static NAN_METHOD(Clear);
+
+    static NAN_METHOD(Size);
+
+    static NAN_METHOD(Get);
+
+    static NAN_METHOD(Insert);
+
+    static NAN_METHOD(GitTreebuilderRemove);
+
+    static NAN_METHOD(Write);
+
     git_treebuilder *raw;
 };
 

@@ -28,26 +28,15 @@ class GitObject : public ObjectWrap {
     GitObject(git_object *raw);
     ~GitObject();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Oid(const Arguments& args);
-    static Handle<Value> Type(const Arguments& args);
-    static Handle<Value> Peel(const Arguments& args);
-    static void PeelWork(uv_work_t* req);
-    static void PeelAfterWork(uv_work_t* req);
+    static NAN_METHOD(Oid);
 
-    struct PeelBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_object * peeled;
-      Persistent<Value> objectReference;
-      const git_object * object;
-      Persistent<Value> target_typeReference;
-      git_otype target_type;
-      Persistent<Function> callback;
-    };
+    static NAN_METHOD(Type);
+
+    static NAN_METHOD(Peel);
+
     git_object *raw;
 };
 

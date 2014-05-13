@@ -28,16 +28,23 @@ class GitPatch : public ObjectWrap {
     GitPatch(git_diff_patch *raw);
     ~GitPatch();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Delta(const Arguments& args);
-    static Handle<Value> Size(const Arguments& args);
-    static Handle<Value> Stats(const Arguments& args);
-    static Handle<Value> Hunk(const Arguments& args);
-    static Handle<Value> Lines(const Arguments& args);
-    static Handle<Value> Line(const Arguments& args);
-    static Handle<Value> ToString(const Arguments& args);
+    static NAN_METHOD(Delta);
+
+    static NAN_METHOD(Size);
+
+    static NAN_METHOD(Stats);
+
+    static NAN_METHOD(Hunk);
+
+    static NAN_METHOD(Lines);
+
+    static NAN_METHOD(Line);
+
+    static NAN_METHOD(ToString);
+
     git_diff_patch *raw;
 };
 

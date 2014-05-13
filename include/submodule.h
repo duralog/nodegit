@@ -28,118 +28,37 @@ class GitSubmodule : public ObjectWrap {
     GitSubmodule(git_submodule *raw);
     ~GitSubmodule();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> AddFinalize(const Arguments& args);
-    static void AddFinalizeWork(uv_work_t* req);
-    static void AddFinalizeAfterWork(uv_work_t* req);
+    static NAN_METHOD(AddFinalize);
 
-    struct AddFinalizeBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> AddToIndex(const Arguments& args);
-    static void AddToIndexWork(uv_work_t* req);
-    static void AddToIndexAfterWork(uv_work_t* req);
+    static NAN_METHOD(AddToIndex);
 
-    struct AddToIndexBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Value> write_indexReference;
-      int write_index;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Save(const Arguments& args);
-    static void SaveWork(uv_work_t* req);
-    static void SaveAfterWork(uv_work_t* req);
+    static NAN_METHOD(Save);
 
-    struct SaveBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Name(const Arguments& args);
-    static Handle<Value> Path(const Arguments& args);
-    static Handle<Value> Url(const Arguments& args);
-    static Handle<Value> SetUrl(const Arguments& args);
-    static Handle<Value> IndexId(const Arguments& args);
-    static Handle<Value> HeadId(const Arguments& args);
-    static Handle<Value> Init(const Arguments& args);
-    static void InitWork(uv_work_t* req);
-    static void InitAfterWork(uv_work_t* req);
+    static NAN_METHOD(Name);
 
-    struct InitBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Value> overwriteReference;
-      int overwrite;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Sync(const Arguments& args);
-    static void SyncWork(uv_work_t* req);
-    static void SyncAfterWork(uv_work_t* req);
+    static NAN_METHOD(Path);
 
-    struct SyncBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Open(const Arguments& args);
-    static void OpenWork(uv_work_t* req);
-    static void OpenAfterWork(uv_work_t* req);
+    static NAN_METHOD(Url);
 
-    struct OpenBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_repository * repo;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Reload(const Arguments& args);
-    static void ReloadWork(uv_work_t* req);
-    static void ReloadAfterWork(uv_work_t* req);
+    static NAN_METHOD(SetUrl);
 
-    struct ReloadBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Status(const Arguments& args);
-    static void StatusWork(uv_work_t* req);
-    static void StatusAfterWork(uv_work_t* req);
+    static NAN_METHOD(IndexId);
 
-    struct StatusBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> statusReference;
-      unsigned int * status;
-      Persistent<Value> submoduleReference;
-      git_submodule * submodule;
-      Persistent<Function> callback;
-    };
+    static NAN_METHOD(HeadId);
+
+    static NAN_METHOD(Init);
+
+    static NAN_METHOD(Sync);
+
+    static NAN_METHOD(Open);
+
+    static NAN_METHOD(Reload);
+
+    static NAN_METHOD(Status);
+
     git_submodule *raw;
 };
 

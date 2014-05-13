@@ -28,13 +28,13 @@ class GitDiffFile : public ObjectWrap {
     GitDiffFile(git_diff_file *raw);
     ~GitDiffFile();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
-    static Handle<Value> Oid(const Arguments& args);
-    static Handle<Value> Path(const Arguments& args);
-    static Handle<Value> Size(const Arguments& args);
-    static Handle<Value> Flags(const Arguments& args);
-    static Handle<Value> Mode(const Arguments& args);
+    static NAN_METHOD(Oid);
+    static NAN_METHOD(Path);
+    static NAN_METHOD(Size);
+    static NAN_METHOD(Flags);
+    static NAN_METHOD(Mode);
 
     git_diff_file *raw;
 };

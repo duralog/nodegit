@@ -28,28 +28,19 @@ class GitTreeEntry : public ObjectWrap {
     GitTreeEntry(git_tree_entry *raw);
     ~GitTreeEntry();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Name(const Arguments& args);
-    static Handle<Value> Oid(const Arguments& args);
-    static Handle<Value> Type(const Arguments& args);
-    static Handle<Value> filemode(const Arguments& args);
-    static Handle<Value> GetObject(const Arguments& args);
-    static void GetObjectWork(uv_work_t* req);
-    static void GetObjectAfterWork(uv_work_t* req);
+    static NAN_METHOD(Name);
 
-    struct GetObjectBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_object * object_out;
-      Persistent<Value> repoReference;
-      git_repository * repo;
-      Persistent<Value> entryReference;
-      const git_tree_entry * entry;
-      Persistent<Function> callback;
-    };
+    static NAN_METHOD(Oid);
+
+    static NAN_METHOD(Type);
+
+    static NAN_METHOD(filemode);
+
+    static NAN_METHOD(GetObject);
+
     git_tree_entry *raw;
 };
 

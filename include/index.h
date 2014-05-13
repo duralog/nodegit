@@ -28,114 +28,43 @@ class GitIndex : public ObjectWrap {
     GitIndex(git_index *raw);
     ~GitIndex();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Open(const Arguments& args);
-    static void OpenWork(uv_work_t* req);
-    static void OpenAfterWork(uv_work_t* req);
+    static NAN_METHOD(Open);
 
-    struct OpenBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_index * out;
-      Persistent<Value> index_pathReference;
-      const char * index_path;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Read(const Arguments& args);
-    static void ReadWork(uv_work_t* req);
-    static void ReadAfterWork(uv_work_t* req);
+    static NAN_METHOD(Read);
 
-    struct ReadBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> indexReference;
-      git_index * index;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Write(const Arguments& args);
-    static void WriteWork(uv_work_t* req);
-    static void WriteAfterWork(uv_work_t* req);
+    static NAN_METHOD(Write);
 
-    struct WriteBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> indexReference;
-      git_index * index;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> ReadTree(const Arguments& args);
-    static void ReadTreeWork(uv_work_t* req);
-    static void ReadTreeAfterWork(uv_work_t* req);
+    static NAN_METHOD(ReadTree);
 
-    struct ReadTreeBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> indexReference;
-      git_index * index;
-      Persistent<Value> treeReference;
-      const git_tree * tree;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> WriteTree(const Arguments& args);
-    static void WriteTreeWork(uv_work_t* req);
-    static void WriteTreeAfterWork(uv_work_t* req);
+    static NAN_METHOD(WriteTree);
 
-    struct WriteTreeBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_oid * out;
-      Persistent<Value> indexReference;
-      git_index * index;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Size(const Arguments& args);
-    static Handle<Value> Clear(const Arguments& args);
-    static Handle<Value> Entry(const Arguments& args);
-    static Handle<Value> Remove(const Arguments& args);
-    static Handle<Value> RemoveDirectory(const Arguments& args);
-    static Handle<Value> AddBypath(const Arguments& args);
-    static void AddBypathWork(uv_work_t* req);
-    static void AddBypathAfterWork(uv_work_t* req);
+    static NAN_METHOD(Size);
 
-    struct AddBypathBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> indexReference;
-      git_index * index;
-      Persistent<Value> pathReference;
-      const char * path;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> RemoveBypath(const Arguments& args);
-    static Handle<Value> Find(const Arguments& args);
-    static Handle<Value> ConflictRemove(const Arguments& args);
-    static Handle<Value> ConflictCleanup(const Arguments& args);
-    static Handle<Value> HasConflicts(const Arguments& args);
-    static Handle<Value> IndexToWorkdir(const Arguments& args);
-    static void IndexToWorkdirWork(uv_work_t* req);
-    static void IndexToWorkdirAfterWork(uv_work_t* req);
+    static NAN_METHOD(Clear);
 
-    struct IndexToWorkdirBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_diff_list * diff;
-      Persistent<Value> repoReference;
-      git_repository * repo;
-      Persistent<Value> indexReference;
-      git_index * index;
-      Persistent<Value> optsReference;
-      const git_diff_options * opts;
-      Persistent<Function> callback;
-    };
+    static NAN_METHOD(Entry);
+
+    static NAN_METHOD(Remove);
+
+    static NAN_METHOD(RemoveDirectory);
+
+    static NAN_METHOD(AddBypath);
+
+    static NAN_METHOD(RemoveBypath);
+
+    static NAN_METHOD(Find);
+
+    static NAN_METHOD(ConflictRemove);
+
+    static NAN_METHOD(ConflictCleanup);
+
+    static NAN_METHOD(HasConflicts);
+
+    static NAN_METHOD(IndexToWorkdir);
+
     git_index *raw;
 };
 

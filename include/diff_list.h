@@ -28,14 +28,19 @@ class GitDiffList : public ObjectWrap {
     GitDiffList(git_diff_list *raw);
     ~GitDiffList();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Merge(const Arguments& args);
-    static Handle<Value> FindSimilar(const Arguments& args);
-    static Handle<Value> Size(const Arguments& args);
-    static Handle<Value> NumDeltasOfType(const Arguments& args);
-    static Handle<Value> Patch(const Arguments& args);
+    static NAN_METHOD(Merge);
+
+    static NAN_METHOD(FindSimilar);
+
+    static NAN_METHOD(Size);
+
+    static NAN_METHOD(NumDeltasOfType);
+
+    static NAN_METHOD(Patch);
+
     git_diff_list *raw;
 };
 

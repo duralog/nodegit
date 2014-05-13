@@ -1,8 +1,7 @@
 /**
  * This code is auto-generated; unless you know what you're doing, do not modify!
  **/
-#include <v8.h>
-#include <node.h>
+#include <nan.h>
 #include <string.h>
 
 #include "git2.h"
@@ -15,45 +14,46 @@ using namespace v8;
 using namespace node;
 
 void GitThreads::Initialize(Handle<v8::Object> target) {
-  HandleScope scope;
+  NanScope();
 
   Persistent<Object> object = Persistent<Object>::New(Object::New());
 
-  object->Set(String::NewSymbol("init"), FunctionTemplate::New(Init)->GetFunction());
-  object->Set(String::NewSymbol("shutdown"), FunctionTemplate::New(Shutdown)->GetFunction());
+  object->Set(NanSymbol("init"), FunctionTemplate::New(Init)->GetFunction());
+  object->Set(NanSymbol("shutdown"), FunctionTemplate::New(Shutdown)->GetFunction());
 
-  target->Set(String::NewSymbol("Threads"), object);
+  target->Set(NanSymbol("Threads"), object);
 }
 
 
 /**
  */
-Handle<Value> GitThreads::Init(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitThreads::Init) {
+  NanScope();
   
 
   int result = git_threads_init(
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  */
-Handle<Value> GitThreads::Shutdown(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitThreads::Shutdown) {
+  NanScope();
   
 
   git_threads_shutdown(
   );
 
-  return Undefined();
+  NanReturnUndefined();
 }
 

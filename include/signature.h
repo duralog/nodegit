@@ -28,14 +28,16 @@ class GitSignature : public ObjectWrap {
     GitSignature(git_signature *raw);
     ~GitSignature();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
-    static Handle<Value> Name(const Arguments& args);
-    static Handle<Value> Email(const Arguments& args);
-    static Handle<Value> Time(const Arguments& args);
+    static NAN_METHOD(Name);
+    static NAN_METHOD(Email);
+    static NAN_METHOD(Time);
 
-    static Handle<Value> Create(const Arguments& args);
-    static Handle<Value> Now(const Arguments& args);
+    static NAN_METHOD(Create);
+
+    static NAN_METHOD(Now);
+
     git_signature *raw;
 };
 

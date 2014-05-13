@@ -28,10 +28,10 @@ class GitTime : public ObjectWrap {
     GitTime(git_time *raw);
     ~GitTime();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
-    static Handle<Value> Time(const Arguments& args);
-    static Handle<Value> Offset(const Arguments& args);
+    static NAN_METHOD(Time);
+    static NAN_METHOD(Offset);
 
     git_time *raw;
 };

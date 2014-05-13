@@ -1,8 +1,7 @@
 /**
  * This code is auto-generated; unless you know what you're doing, do not modify!
  **/
-#include <v8.h>
-#include <node.h>
+#include <nan.h>
 #include <string.h>
 
 #include "git2.h"
@@ -24,12 +23,12 @@ GitRemote::~GitRemote() {
 }
 
 void GitRemote::Initialize(Handle<v8::Object> target) {
-  HandleScope scope;
+  NanScope();
 
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+  Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
 
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  tpl->SetClassName(String::NewSymbol("Remote"));
+  tpl->SetClassName(NanSymbol("Remote"));
 
   NODE_SET_PROTOTYPE_METHOD(tpl, "name", Name);
   NODE_SET_PROTOTYPE_METHOD(tpl, "url", Url);
@@ -50,27 +49,31 @@ void GitRemote::Initialize(Handle<v8::Object> target) {
   NODE_SET_METHOD(tpl, "isValidName", IsValidName);
 
 
-  constructor_template = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(String::NewSymbol("Remote"), constructor_template);
+  //constructor_template = Persistent<Function>::New(tpl->GetFunction());
+  Local<Function> _constructor_template = tpl->GetFunction();
+  NanAssignPersistent(constructor_template, _constructor_template);
+  target->Set(NanSymbol("Remote"), _constructor_template);
 }
 
-Handle<Value> GitRemote::New(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::New) {
+  NanScope();
 
   if (args.Length() == 0 || !args[0]->IsExternal()) {
-    return ThrowException(Exception::Error(String::New("git_remote is required.")));
+    NanThrowError("git_remote is required.");
   }
 
-  GitRemote* object = new GitRemote((git_remote *) External::Unwrap(args[0]));
+  //GitRemote* object = new GitRemote((git_remote *) External::Unwrap(args[0]));
+  GitRemote* object = ObjectWrap::Unwrap<GitRemote>(args[0]->ToObject());
   object->Wrap(args.This());
 
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
 Handle<Value> GitRemote::New(void *raw) {
-  HandleScope scope;
-  Handle<Value> argv[1] = { External::New((void *)raw) };
-  return scope.Close(GitRemote::constructor_template->NewInstance(1, argv));
+  NanEscapableScope();
+  Handle<Value> argv[1] = { NanNew<External>((void *)raw) };
+  return NanEscapeScope(NanNew<Function>(GitRemote::constructor_template)->NewInstance(1, argv));
+  //return scope.Close(GitRemote::constructor_template->NewInstance(1, argv));
 }
 
 git_remote *GitRemote::GetValue() {
@@ -81,8 +84,8 @@ git_remote *GitRemote::GetValue() {
 /**
  * @return {String} result
  */
-Handle<Value> GitRemote::Name(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::Name) {
+  NanScope();
   
 
   const char * result = git_remote_name(
@@ -90,15 +93,15 @@ Handle<Value> GitRemote::Name(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = String::New(result);
-  return scope.Close(to);
+    to = NanNew<String>(result);
+  NanReturnValue(to);
 }
 
 /**
  * @return {String} result
  */
-Handle<Value> GitRemote::Url(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::Url) {
+  NanScope();
   
 
   const char * result = git_remote_url(
@@ -106,15 +109,15 @@ Handle<Value> GitRemote::Url(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = String::New(result);
-  return scope.Close(to);
+    to = NanNew<String>(result);
+  NanReturnValue(to);
 }
 
 /**
  * @return {String} result
  */
-Handle<Value> GitRemote::PushUrl(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::PushUrl) {
+  NanScope();
   
 
   const char * result = git_remote_pushurl(
@@ -122,22 +125,24 @@ Handle<Value> GitRemote::PushUrl(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = String::New(result);
-  return scope.Close(to);
+    to = NanNew<String>(result);
+  NanReturnValue(to);
 }
 
 /**
  * @param {String} url
  */
-Handle<Value> GitRemote::SetUrl(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::SetUrl) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsString()) {
-    return ThrowException(Exception::Error(String::New("String url is required.")));
+    NanThrowError("String url is required.");
   }
 
+
   const char* from_url;
-            String::Utf8Value url(args[0]->ToString());
-      from_url = strdup(*url);
+            //String::Utf8Value url(args[0]->ToString());
+      //from_url = strdup(*url);
+      from_url = strdup(NanCString(args[0]->ToString(), NULL));
       
   int result = git_remote_set_url(
     ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue()
@@ -145,28 +150,31 @@ Handle<Value> GitRemote::SetUrl(const Arguments& args) {
   );
   free((void *)from_url);
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {String} url
  */
-Handle<Value> GitRemote::SetPushUrl(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::SetPushUrl) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsString()) {
-    return ThrowException(Exception::Error(String::New("String url is required.")));
+    NanThrowError("String url is required.");
   }
 
+
   const char* from_url;
-            String::Utf8Value url(args[0]->ToString());
-      from_url = strdup(*url);
+            //String::Utf8Value url(args[0]->ToString());
+      //from_url = strdup(*url);
+      from_url = strdup(NanCString(args[0]->ToString(), NULL));
       
   int result = git_remote_set_pushurl(
     ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue()
@@ -174,14 +182,15 @@ Handle<Value> GitRemote::SetPushUrl(const Arguments& args) {
   );
   free((void *)from_url);
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 #include "../include/functions/copy.h"
@@ -189,78 +198,46 @@ Handle<Value> GitRemote::SetPushUrl(const Arguments& args) {
 /**
  * @param {Number} direction
  */
-Handle<Value> GitRemote::Connect(const Arguments& args) {
-  HandleScope scope;
-      if (args.Length() == 0 || !args[0]->IsNumber()) {
-    return ThrowException(Exception::Error(String::New("Number direction is required.")));
+class ConnectWorker : public NanAsyncWorker {
+  public:
+    ConnectWorker(NanCallback *callback
+      , Local<Object> remoteReference
+      , Local<Object> directionReference
+    ) : NanAsyncWorker(callback), error_code(GIT_OK) {
+      SaveToPersistent("remote", remoteReference);
+      SaveToPersistent("direction", directionReference);
+    }
+    ~ConnectWorker() {}
+
+    void HandleOKCallback() {
+      TryCatch try_catch;
+      if(this->error_code == GIT_OK) {
+        callback->Call(0, NULL);
+
+
+NAN_METHOD(GitRemote::Connect) {
+  NanScope();
+  if (args.Length() == 0 || !args[0]->IsNumber()) {
+    NanThrowError("Number direction is required.");
   }
 
   if (args.Length() == 1 || !args[1]->IsFunction()) {
-    return ThrowException(Exception::Error(String::New("Callback is required and must be a Function.")));
+    NanThrowError("Callback is required and must be a Function.");
   }
-
-  ConnectBaton* baton = new ConnectBaton;
-  baton->error_code = GIT_OK;
-  baton->error = NULL;
-  baton->request.data = baton;
-  baton->remoteReference = Persistent<Value>::New(args.This());
-  baton->remote = ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue();
-  baton->directionReference = Persistent<Value>::New(args[0]);
-    git_direction from_direction;
+  //this->remoteReference = Persistent<Value>::New(args.This());
+  GitRemote* remote = ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue();
+  //baton->directionReference = Persistent<Value>::New(args[0]);
+  //convert: 
+  git_direction from_direction;
             from_direction = (git_direction) (int)  args[0]->ToNumber()->Value();
-          baton->direction = from_direction;
-    baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[1]));
-
-  uv_queue_work(uv_default_loop(), &baton->request, ConnectWork, (uv_after_work_cb)ConnectAfterWork);
-
-  return Undefined();
-}
-
-void GitRemote::ConnectWork(uv_work_t *req) {
-  ConnectBaton *baton = static_cast<ConnectBaton *>(req->data);
-  int result = git_remote_connect(
-    baton->remote, 
-    baton->direction
+        //baton->direction = from_direction;
+  NanCallback *callback = new NanCallback(args[1].As<v8::Function>());
+  NanAsyncQueueWorker(new ConnectWorker(callback
+      , args[0] //remote
+      , args[1] //direction
   );
-  baton->error_code = result;
-  if (result != GIT_OK && giterr_last() != NULL) {
-    baton->error = git_error_dup(giterr_last());
-  }
-}
 
-void GitRemote::ConnectAfterWork(uv_work_t *req) {
-  HandleScope scope;
-  ConnectBaton *baton = static_cast<ConnectBaton *>(req->data);
-
-  TryCatch try_catch;
-  if (baton->error_code == GIT_OK) {
-    Handle<Value> result = Local<Value>::New(Undefined());
-    Handle<Value> argv[2] = {
-      Local<Value>::New(Null()),
-      result
-    };
-    baton->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-  } else {
-    if (baton->error) {
-      Handle<Value> argv[1] = {
-        Exception::Error(String::New(baton->error->message))
-      };
-      baton->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-      if (baton->error->message)
-        free((void *)baton->error->message);
-      free((void *)baton->error);
-    } else {
-      baton->callback->Call(Context::GetCurrent()->Global(), 0, NULL);
-    }
-      }
-
-  if (try_catch.HasCaught()) {
-    node::FatalException(try_catch);
-  }
-  baton->remoteReference.Dispose();
-  baton->directionReference.Dispose();
-  baton->callback.Dispose();
-  delete baton;
+  NanReturnUndefined();
 }
 
 #include "../include/functions/copy.h"
@@ -269,266 +246,215 @@ void GitRemote::ConnectAfterWork(uv_work_t *req) {
  * @param {Function} progress_cb
  * @param {void} payload
  */
-Handle<Value> GitRemote::Download(const Arguments& args) {
-  HandleScope scope;
-    
-  if (args.Length() == 1 || !args[1]->IsFunction()) {
-    return ThrowException(Exception::Error(String::New("Callback is required and must be a Function.")));
-  }
+class DownloadWorker : public NanAsyncWorker {
+  public:
+    DownloadWorker(NanCallback *callback
+      , Local<Object> remoteReference
+      , Local<Object> progress_cbReference
+      , Local<Object> payloadReference
+    ) : NanAsyncWorker(callback), error_code(GIT_OK) {
+      SaveToPersistent("remote", remoteReference);
+      SaveToPersistent("progress_cb", progress_cbReference);
+      SaveToPersistent("payload", payloadReference);
+    }
+    ~DownloadWorker() {}
 
-  DownloadBaton* baton = new DownloadBaton;
-  baton->error_code = GIT_OK;
-  baton->error = NULL;
-  baton->request.data = baton;
-  baton->remoteReference = Persistent<Value>::New(args.This());
-  baton->remote = ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue();
-  baton->progress_cbReference = Persistent<Value>::New(args[0]);
-    git_transfer_progress_callback from_progress_cb;
+    void HandleOKCallback() {
+      TryCatch try_catch;
+      if(this->error_code == GIT_OK) {
+        callback->Call(0, NULL);
+
+
+NAN_METHOD(GitRemote::Download) {
+  NanScope();
+
+  if (args.Length() == 1 || !args[1]->IsFunction()) {
+    NanThrowError("Callback is required and must be a Function.");
+  }
+  //this->remoteReference = Persistent<Value>::New(args.This());
+  GitRemote* remote = ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue();
+  //baton->progress_cbReference = Persistent<Value>::New(args[0]);
+  //convert: 
+  git_transfer_progress_callback from_progress_cb;
       if (args[0]->IsFunction()) {
             Persistent<Function>::New(Local<Function>::Cast(args[0]));
           } else {
       from_progress_cb = 0;
     }
-      baton->progress_cb = from_progress_cb;
-    baton->payloadReference = Persistent<Value>::New(args[1]);
-      baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[1]));
-
-  uv_queue_work(uv_default_loop(), &baton->request, DownloadWork, (uv_after_work_cb)DownloadAfterWork);
-
-  return Undefined();
-}
-
-void GitRemote::DownloadWork(uv_work_t *req) {
-  DownloadBaton *baton = static_cast<DownloadBaton *>(req->data);
-  int result = git_remote_download(
-    baton->remote, 
-    baton->progress_cb, 
-    baton->payload
+    //baton->progress_cb = from_progress_cb;
+  //baton->payloadReference = Persistent<Value>::New(args[1]);
+  //convert: 
+  NanCallback *callback = new NanCallback(args[1].As<v8::Function>());
+  NanAsyncQueueWorker(new DownloadWorker(callback
+      , args[0] //remote
+      , args[1] //progress_cb
+      , args[2] //payload
   );
-  baton->error_code = result;
-  if (result != GIT_OK && giterr_last() != NULL) {
-    baton->error = git_error_dup(giterr_last());
-  }
-}
 
-void GitRemote::DownloadAfterWork(uv_work_t *req) {
-  HandleScope scope;
-  DownloadBaton *baton = static_cast<DownloadBaton *>(req->data);
-
-  TryCatch try_catch;
-  if (baton->error_code == GIT_OK) {
-    Handle<Value> result = Local<Value>::New(Undefined());
-    Handle<Value> argv[2] = {
-      Local<Value>::New(Null()),
-      result
-    };
-    baton->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-  } else {
-    if (baton->error) {
-      Handle<Value> argv[1] = {
-        Exception::Error(String::New(baton->error->message))
-      };
-      baton->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-      if (baton->error->message)
-        free((void *)baton->error->message);
-      free((void *)baton->error);
-    } else {
-      baton->callback->Call(Context::GetCurrent()->Global(), 0, NULL);
-    }
-      }
-
-  if (try_catch.HasCaught()) {
-    node::FatalException(try_catch);
-  }
-  baton->remoteReference.Dispose();
-  baton->progress_cbReference.Dispose();
-  baton->payloadReference.Dispose();
-  baton->callback.Dispose();
-  delete baton;
+  NanReturnUndefined();
 }
 
 /**
  */
-Handle<Value> GitRemote::Connected(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::Connected) {
+  NanScope();
   
 
   int result = git_remote_connected(
     ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue()
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  */
-Handle<Value> GitRemote::Stop(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::Stop) {
+  NanScope();
   
 
   git_remote_stop(
     ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue()
   );
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 #include "../include/functions/copy.h"
 
 /**
  */
-Handle<Value> GitRemote::Disconnect(const Arguments& args) {
-  HandleScope scope;
-    
-  if (args.Length() == 0 || !args[0]->IsFunction()) {
-    return ThrowException(Exception::Error(String::New("Callback is required and must be a Function.")));
-  }
-
-  DisconnectBaton* baton = new DisconnectBaton;
-  baton->error_code = GIT_OK;
-  baton->error = NULL;
-  baton->request.data = baton;
-  baton->remoteReference = Persistent<Value>::New(args.This());
-  baton->remote = ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue();
-  baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[0]));
-
-  uv_queue_work(uv_default_loop(), &baton->request, DisconnectWork, (uv_after_work_cb)DisconnectAfterWork);
-
-  return Undefined();
-}
-
-void GitRemote::DisconnectWork(uv_work_t *req) {
-  DisconnectBaton *baton = static_cast<DisconnectBaton *>(req->data);
-  git_remote_disconnect(
-    baton->remote
-  );
-}
-
-void GitRemote::DisconnectAfterWork(uv_work_t *req) {
-  HandleScope scope;
-  DisconnectBaton *baton = static_cast<DisconnectBaton *>(req->data);
-
-  TryCatch try_catch;
-  if (baton->error_code == GIT_OK) {
-    Handle<Value> result = Local<Value>::New(Undefined());
-    Handle<Value> argv[2] = {
-      Local<Value>::New(Null()),
-      result
-    };
-    baton->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-  } else {
-    if (baton->error) {
-      Handle<Value> argv[1] = {
-        Exception::Error(String::New(baton->error->message))
-      };
-      baton->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-      if (baton->error->message)
-        free((void *)baton->error->message);
-      free((void *)baton->error);
-    } else {
-      baton->callback->Call(Context::GetCurrent()->Global(), 0, NULL);
+class DisconnectWorker : public NanAsyncWorker {
+  public:
+    DisconnectWorker(NanCallback *callback
+      , Local<Object> remoteReference
+    ) : NanAsyncWorker(callback), error_code(GIT_OK) {
+      SaveToPersistent("remote", remoteReference);
     }
-      }
+    ~DisconnectWorker() {}
 
-  if (try_catch.HasCaught()) {
-    node::FatalException(try_catch);
+    void HandleOKCallback() {
+      TryCatch try_catch;
+      if(this->error_code == GIT_OK) {
+        callback->Call(0, NULL);
+
+
+NAN_METHOD(GitRemote::Disconnect) {
+  NanScope();
+
+  if (args.Length() == 0 || !args[0]->IsFunction()) {
+    NanThrowError("Callback is required and must be a Function.");
   }
-  baton->remoteReference.Dispose();
-  baton->callback.Dispose();
-  delete baton;
+  //this->remoteReference = Persistent<Value>::New(args.This());
+  GitRemote* remote = ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue();
+  NanCallback *callback = new NanCallback(args[0].As<v8::Function>());
+  NanAsyncQueueWorker(new DisconnectWorker(callback
+      , args[0] //remote
+  );
+
+  NanReturnUndefined();
 }
 
 /**
  */
-Handle<Value> GitRemote::UpdateTips(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::UpdateTips) {
+  NanScope();
   
 
   int result = git_remote_update_tips(
     ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue()
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {String} url
  */
-Handle<Value> GitRemote::ValidUrl(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::ValidUrl) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsString()) {
-    return ThrowException(Exception::Error(String::New("String url is required.")));
+    NanThrowError("String url is required.");
   }
 
+
   const char * from_url;
-            String::Utf8Value url(args[0]->ToString());
-      from_url = strdup(*url);
+            //String::Utf8Value url(args[0]->ToString());
+      //from_url = strdup(*url);
+      from_url = strdup(NanCString(args[0]->ToString(), NULL));
       
   int result = git_remote_valid_url(
     from_url
   );
   free((void *)from_url);
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {String} url
  */
-Handle<Value> GitRemote::SupportedUrl(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::SupportedUrl) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsString()) {
-    return ThrowException(Exception::Error(String::New("String url is required.")));
+    NanThrowError("String url is required.");
   }
 
+
   const char* from_url;
-            String::Utf8Value url(args[0]->ToString());
-      from_url = strdup(*url);
+            //String::Utf8Value url(args[0]->ToString());
+      //from_url = strdup(*url);
+      from_url = strdup(NanCString(args[0]->ToString(), NULL));
       
   int result = git_remote_supported_url(
     from_url
   );
   free((void *)from_url);
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {Number} check
  */
-Handle<Value> GitRemote::CheckCert(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::CheckCert) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsInt32()) {
-    return ThrowException(Exception::Error(String::New("Number check is required.")));
+    NanThrowError("Number check is required.");
   }
+
 
   int from_check;
             from_check = (int)   args[0]->ToInt32()->Value();
@@ -538,37 +464,39 @@ Handle<Value> GitRemote::CheckCert(const Arguments& args) {
     , from_check
   );
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  */
-Handle<Value> GitRemote::UpdateFetchhead(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::UpdateFetchhead) {
+  NanScope();
   
 
   int result = git_remote_update_fetchhead(
     ObjectWrap::Unwrap<GitRemote>(args.This())->GetValue()
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {Number} value
  */
-Handle<Value> GitRemote::SetUpdateFetchhead(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::SetUpdateFetchhead) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsInt32()) {
-    return ThrowException(Exception::Error(String::New("Number value is required.")));
+    NanThrowError("Number value is required.");
   }
+
 
   int from_value;
             from_value = (int)   args[0]->ToInt32()->Value();
@@ -578,35 +506,38 @@ Handle<Value> GitRemote::SetUpdateFetchhead(const Arguments& args) {
     , from_value
   );
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {String} remote_name
  */
-Handle<Value> GitRemote::IsValidName(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitRemote::IsValidName) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsString()) {
-    return ThrowException(Exception::Error(String::New("String remote_name is required.")));
+    NanThrowError("String remote_name is required.");
   }
 
+
   const char * from_remote_name;
-            String::Utf8Value remote_name(args[0]->ToString());
-      from_remote_name = strdup(*remote_name);
+            //String::Utf8Value remote_name(args[0]->ToString());
+      //from_remote_name = strdup(*remote_name);
+      from_remote_name = strdup(NanCString(args[0]->ToString(), NULL));
       
   int result = git_remote_is_valid_name(
     from_remote_name
   );
   free((void *)from_remote_name);
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 Persistent<Function> GitRemote::constructor_template;

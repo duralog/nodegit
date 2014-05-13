@@ -23,11 +23,13 @@ class GitThreads : public ObjectWrap {
 
   private:
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Init(const Arguments& args);
-    static Handle<Value> Shutdown(const Arguments& args);
+    static NAN_METHOD(Init);
+
+    static NAN_METHOD(Shutdown);
+
 };
 
 #endif

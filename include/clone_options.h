@@ -28,7 +28,7 @@ class GitCloneOptions : public ObjectWrap {
     GitCloneOptions(git_clone_options *raw);
     ~GitCloneOptions();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
     git_clone_options *raw;

@@ -28,10 +28,10 @@ class GitIndexTime : public ObjectWrap {
     GitIndexTime(git_index_time *raw);
     ~GitIndexTime();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
-    static Handle<Value> Seconds(const Arguments& args);
-    static Handle<Value> Nanoseconds(const Arguments& args);
+    static NAN_METHOD(Seconds);
+    static NAN_METHOD(Nanoseconds);
 
     git_index_time *raw;
 };

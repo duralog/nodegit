@@ -28,29 +28,25 @@ class GitTag : public ObjectWrap {
     GitTag(git_tag *raw);
     ~GitTag();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Oid(const Arguments& args);
-    static Handle<Value> GetTarget(const Arguments& args);
-    static void GetTargetWork(uv_work_t* req);
-    static void GetTargetAfterWork(uv_work_t* req);
+    static NAN_METHOD(Oid);
 
-    struct GetTargetBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      git_object * target_out;
-      Persistent<Value> tagReference;
-      const git_tag * tag;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> TargetId(const Arguments& args);
-    static Handle<Value> TargetType(const Arguments& args);
-    static Handle<Value> Name(const Arguments& args);
-    static Handle<Value> Tagger(const Arguments& args);
-    static Handle<Value> Message(const Arguments& args);
-    static Handle<Value> Peel(const Arguments& args);
+    static NAN_METHOD(GetTarget);
+
+    static NAN_METHOD(TargetId);
+
+    static NAN_METHOD(TargetType);
+
+    static NAN_METHOD(Name);
+
+    static NAN_METHOD(Tagger);
+
+    static NAN_METHOD(Message);
+
+    static NAN_METHOD(Peel);
+
     git_tag *raw;
 };
 

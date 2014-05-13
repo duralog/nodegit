@@ -28,7 +28,7 @@ class GitDiffOptions : public ObjectWrap {
     GitDiffOptions(git_diff_options *raw);
     ~GitDiffOptions();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
     git_diff_options *raw;

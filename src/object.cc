@@ -1,8 +1,7 @@
 /**
  * This code is auto-generated; unless you know what you're doing, do not modify!
  **/
-#include <v8.h>
-#include <node.h>
+#include <nan.h>
 #include <string.h>
 
 #include "git2.h"
@@ -25,39 +24,43 @@ GitObject::~GitObject() {
 }
 
 void GitObject::Initialize(Handle<v8::Object> target) {
-  HandleScope scope;
+  NanScope();
 
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+  Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
 
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  tpl->SetClassName(String::NewSymbol("Object"));
+  tpl->SetClassName(NanSymbol("Object"));
 
   NODE_SET_PROTOTYPE_METHOD(tpl, "oid", Oid);
   NODE_SET_PROTOTYPE_METHOD(tpl, "type", Type);
   NODE_SET_PROTOTYPE_METHOD(tpl, "peel", Peel);
 
 
-  constructor_template = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(String::NewSymbol("Object"), constructor_template);
+  //constructor_template = Persistent<Function>::New(tpl->GetFunction());
+  Local<Function> _constructor_template = tpl->GetFunction();
+  NanAssignPersistent(constructor_template, _constructor_template);
+  target->Set(NanSymbol("Object"), _constructor_template);
 }
 
-Handle<Value> GitObject::New(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitObject::New) {
+  NanScope();
 
   if (args.Length() == 0 || !args[0]->IsExternal()) {
-    return ThrowException(Exception::Error(String::New("git_object is required.")));
+    NanThrowError("git_object is required.");
   }
 
-  GitObject* object = new GitObject((git_object *) External::Unwrap(args[0]));
+  //GitObject* object = new GitObject((git_object *) External::Unwrap(args[0]));
+  GitObject* object = ObjectWrap::Unwrap<GitObject>(args[0]->ToObject());
   object->Wrap(args.This());
 
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
 Handle<Value> GitObject::New(void *raw) {
-  HandleScope scope;
-  Handle<Value> argv[1] = { External::New((void *)raw) };
-  return scope.Close(GitObject::constructor_template->NewInstance(1, argv));
+  NanEscapableScope();
+  Handle<Value> argv[1] = { NanNew<External>((void *)raw) };
+  return NanEscapeScope(NanNew<Function>(GitObject::constructor_template)->NewInstance(1, argv));
+  //return scope.Close(GitObject::constructor_template->NewInstance(1, argv));
 }
 
 git_object *GitObject::GetValue() {
@@ -68,8 +71,8 @@ git_object *GitObject::GetValue() {
 /**
  * @return {Oid} result
  */
-Handle<Value> GitObject::Oid(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitObject::Oid) {
+  NanScope();
   
 
   const git_oid * result = git_object_id(
@@ -83,16 +86,16 @@ Handle<Value> GitObject::Oid(const Arguments& args) {
   if (result != NULL) {
     to = GitOid::New((void *)result);
   } else {
-    to = Null();
+    to = NanNew(NanNull());
   }
-  return scope.Close(to);
+  NanReturnValue(to);
 }
 
 /**
  * @return {Number} result
  */
-Handle<Value> GitObject::Type(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitObject::Type) {
+  NanScope();
   
 
   git_otype result = git_object_type(
@@ -100,8 +103,8 @@ Handle<Value> GitObject::Type(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = Number::New(result);
-  return scope.Close(to);
+    to = NanNew<Number>(result);
+  NanReturnValue(to);
 }
 
 #include "../include/functions/copy.h"
@@ -110,85 +113,88 @@ Handle<Value> GitObject::Type(const Arguments& args) {
  * @param {Number} target_type
  * @param {Object} callback
  */
-Handle<Value> GitObject::Peel(const Arguments& args) {
-  HandleScope scope;
-      if (args.Length() == 0 || !args[0]->IsInt32()) {
-    return ThrowException(Exception::Error(String::New("Number target_type is required.")));
-  }
-
-  if (args.Length() == 1 || !args[1]->IsFunction()) {
-    return ThrowException(Exception::Error(String::New("Callback is required and must be a Function.")));
-  }
-
-  PeelBaton* baton = new PeelBaton;
-  baton->error_code = GIT_OK;
-  baton->error = NULL;
-  baton->request.data = baton;
-  baton->objectReference = Persistent<Value>::New(args.This());
-  baton->object = ObjectWrap::Unwrap<GitObject>(args.This())->GetValue();
-  baton->target_typeReference = Persistent<Value>::New(args[0]);
-    git_otype from_target_type;
-            from_target_type = (git_otype)   args[0]->ToInt32()->Value();
-          baton->target_type = from_target_type;
-    baton->callback = Persistent<Function>::New(Local<Function>::Cast(args[1]));
-
-  uv_queue_work(uv_default_loop(), &baton->request, PeelWork, (uv_after_work_cb)PeelAfterWork);
-
-  return Undefined();
-}
-
-void GitObject::PeelWork(uv_work_t *req) {
-  PeelBaton *baton = static_cast<PeelBaton *>(req->data);
-  int result = git_object_peel(
-    &baton->peeled, 
-    baton->object, 
-    baton->target_type
-  );
-  baton->error_code = result;
-  if (result != GIT_OK && giterr_last() != NULL) {
-    baton->error = git_error_dup(giterr_last());
-  }
-}
-
-void GitObject::PeelAfterWork(uv_work_t *req) {
-  HandleScope scope;
-  PeelBaton *baton = static_cast<PeelBaton *>(req->data);
-
-  TryCatch try_catch;
-  if (baton->error_code == GIT_OK) {
-  Handle<Value> to;
-    if (baton->peeled != NULL) {
-    to = GitObject::New((void *)baton->peeled);
-  } else {
-    to = Null();
-  }
-  Handle<Value> result = to;
-    Handle<Value> argv[2] = {
-      Local<Value>::New(Null()),
-      result
-    };
-    baton->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-  } else {
-    if (baton->error) {
-      Handle<Value> argv[1] = {
-        Exception::Error(String::New(baton->error->message))
-      };
-      baton->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-      if (baton->error->message)
-        free((void *)baton->error->message);
-      free((void *)baton->error);
-    } else {
-      baton->callback->Call(Context::GetCurrent()->Global(), 0, NULL);
+class PeelWorker : public NanAsyncWorker {
+  public:
+    PeelWorker(NanCallback *callback
+      , Local<Object> objectReference
+      , Local<Object> target_typeReference
+    ) : NanAsyncWorker(callback), error_code(GIT_OK) {
+      SaveToPersistent("object", objectReference);
+      SaveToPersistent("target_type", target_typeReference);
     }
-      }
+    ~PeelWorker() {}
+
+    void HandleOKCallback() {
+      TryCatch try_catch;
+      if(this->error_code == GIT_OK) {
+      Handle<Value> to;
+        if (this->peeled != NULL) {
+    to = GitObject::New((void *)this->peeled);
+  } else {
+    to = NanNew(NanNull());
+  }
+      Handle<Value> result = to;
+  } else {
+
+  }
 
   if (try_catch.HasCaught()) {
     node::FatalException(try_catch);
   }
-  baton->objectReference.Dispose();
-  baton->target_typeReference.Dispose();
-  baton->callback.Dispose();
-  delete baton;
+  //delete baton;
+      // normal callback...
+      //NanScope();
+
+      //Local<Value> argv[] = {
+      //  NanNew(NanNull()),
+      //  NanNewBufferHandle((char*)resultdata, resultsize)
+      //};
+
+      //callback->Call(2, argv);
+    }
+
+    void Execute() {
+      int result = git_object_peel(&this->peeled, this->object, this->target_type);
+      this->error_code = result;
+      const git_error* err;
+      if (result != GIT_OK && (err = giterr_last()) != NULL) {
+        SetErrorMessage(err->message);
+      }
+    }
+
+  private:
+    git_object * peeled;
+    const git_object * object;
+    git_otype target_type;
+    int error_code;
+    //const git_error* error;
+};
+
+
+
+NAN_METHOD(GitObject::Peel) {
+  NanScope();
+  if (args.Length() == 0 || !args[0]->IsInt32()) {
+    NanThrowError("Number target_type is required.");
+  }
+
+  if (args.Length() == 1 || !args[1]->IsFunction()) {
+    NanThrowError("Callback is required and must be a Function.");
+  }
+  //this->objectReference = Persistent<Value>::New(args.This());
+  GitObject* object = ObjectWrap::Unwrap<GitObject>(args.This())->GetValue();
+  //baton->target_typeReference = Persistent<Value>::New(args[0]);
+  //convert: 
+  git_otype from_target_type;
+            from_target_type = (git_otype)   args[0]->ToInt32()->Value();
+        //baton->target_type = from_target_type;
+  NanCallback *callback = new NanCallback(args[1].As<v8::Function>());
+  NanAsyncQueueWorker(new PeelWorker(callback
+      , args[1] //object
+      , args[2] //target_type
+  );
+
+  NanReturnUndefined();
 }
 
 Persistent<Function> GitObject::constructor_template;

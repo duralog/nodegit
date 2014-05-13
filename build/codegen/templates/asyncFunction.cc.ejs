@@ -111,8 +111,17 @@ if (!returns.length) {
     void Execute() {
 <%
   if (functionInfo.return.cType != "void" || functionInfo.return.isErrorCode) {
+    // before git function
+    for (var i = 0; i < functionInfo.args.length; i++) {
+      var arg = functionInfo.args[i];
+      if (arg.isReturn && arg.shouldAlloc) {
+-%>
+      this-><%- arg.name %> = (<%- arg.cType %>)malloc(sizeof(<%- arg.cType.replace('*', '') %>));
+<%
+      }
+    }
     // call git function
-%>
+-%>
       <%- functionInfo.return.cType %> result = <% } %><%- functionInfo.cFunctionName %>(<%
   // print args
     for (var i = 0; i < functionInfo.args.length; i++) {
@@ -124,7 +133,7 @@ if (!returns.length) {
       if(i < functionInfo.args.length - 1) {
         %>, <%
       }
-    } -%> );
+    } -%>);
 
 <%
     if (functionInfo.return.isErrorCode) {
@@ -172,7 +181,7 @@ if (!returns.length) {
 NAN_METHOD(<%- cppClassName %>::<%- functionInfo.cppFunctionName %>) {
   NanScope();
 <% var jsArg; -%>
-  <% include guardArguments.cc.ejs %>
+<% include guardArguments.cc.ejs %>
   if (args.Length() == <%- jsArg %> || !args[<%- jsArg %>]->IsFunction()) {
     NanThrowError("Callback is required and must be a Function.");
   }
@@ -197,13 +206,6 @@ NAN_METHOD(<%- cppClassName %>::<%- functionInfo.cppFunctionName %>) {
           }
         }
         if (!(arg.isReturn || arg.isSelf || arg.isPayload)) jsArg++;
-      } else {
-        if (arg.shouldAlloc) {
--%>
-  this-><%- arg.name %> = (<%- arg.cType %>)malloc(sizeof(<%- arg.cType.replace('*', '') %>));
-<%
-        } else {
-        }
       }
     } -%>
   NanCallback *callback = new NanCallback(args[<%- jsArg %>].As<v8::Function>());
@@ -213,7 +215,7 @@ for (var i = 0; i < functionInfo.args.length; i++) {
   var arg = functionInfo.args[i];
   if (!arg.isReturn) {
 -%>
-      , <%- arg.name %>
+      , args[<%=i%>] //<%- arg.name %>
 <%
   }
 }

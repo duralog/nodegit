@@ -1,8 +1,7 @@
 /**
  * This code is auto-generated; unless you know what you're doing, do not modify!
  **/
-#include <v8.h>
-#include <node.h>
+#include <nan.h>
 #include <string.h>
 
 #include "git2.h"
@@ -23,36 +22,40 @@ GitCloneOptions::~GitCloneOptions() {
 }
 
 void GitCloneOptions::Initialize(Handle<v8::Object> target) {
-  HandleScope scope;
+  NanScope();
 
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+  Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
 
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  tpl->SetClassName(String::NewSymbol("CloneOptions"));
+  tpl->SetClassName(NanSymbol("CloneOptions"));
 
 
 
-  constructor_template = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(String::NewSymbol("CloneOptions"), constructor_template);
+  //constructor_template = Persistent<Function>::New(tpl->GetFunction());
+  Local<Function> _constructor_template = tpl->GetFunction();
+  NanAssignPersistent(constructor_template, _constructor_template);
+  target->Set(NanSymbol("CloneOptions"), _constructor_template);
 }
 
-Handle<Value> GitCloneOptions::New(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitCloneOptions::New) {
+  NanScope();
 
   if (args.Length() == 0 || !args[0]->IsExternal()) {
-    return ThrowException(Exception::Error(String::New("git_clone_options is required.")));
+    NanThrowError("git_clone_options is required.");
   }
 
-  GitCloneOptions* object = new GitCloneOptions((git_clone_options *) External::Unwrap(args[0]));
+  //GitCloneOptions* object = new GitCloneOptions((git_clone_options *) External::Unwrap(args[0]));
+  GitCloneOptions* object = ObjectWrap::Unwrap<GitCloneOptions>(args[0]->ToObject());
   object->Wrap(args.This());
 
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
 Handle<Value> GitCloneOptions::New(void *raw) {
-  HandleScope scope;
-  Handle<Value> argv[1] = { External::New((void *)raw) };
-  return scope.Close(GitCloneOptions::constructor_template->NewInstance(1, argv));
+  NanEscapableScope();
+  Handle<Value> argv[1] = { NanNew<External>((void *)raw) };
+  return NanEscapeScope(NanNew<Function>(GitCloneOptions::constructor_template)->NewInstance(1, argv));
+  //return scope.Close(GitCloneOptions::constructor_template->NewInstance(1, argv));
 }
 
 git_clone_options *GitCloneOptions::GetValue() {

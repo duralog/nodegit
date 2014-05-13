@@ -28,12 +28,12 @@ class GitDiffRange : public ObjectWrap {
     GitDiffRange(git_diff_range *raw);
     ~GitDiffRange();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
-    static Handle<Value> OldStart(const Arguments& args);
-    static Handle<Value> OldLines(const Arguments& args);
-    static Handle<Value> NewStart(const Arguments& args);
-    static Handle<Value> NewLines(const Arguments& args);
+    static NAN_METHOD(OldStart);
+    static NAN_METHOD(OldLines);
+    static NAN_METHOD(NewStart);
+    static NAN_METHOD(NewLines);
 
     git_diff_range *raw;
 };

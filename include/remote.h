@@ -28,65 +28,43 @@ class GitRemote : public ObjectWrap {
     GitRemote(git_remote *raw);
     ~GitRemote();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Name(const Arguments& args);
-    static Handle<Value> Url(const Arguments& args);
-    static Handle<Value> PushUrl(const Arguments& args);
-    static Handle<Value> SetUrl(const Arguments& args);
-    static Handle<Value> SetPushUrl(const Arguments& args);
-    static Handle<Value> Connect(const Arguments& args);
-    static void ConnectWork(uv_work_t* req);
-    static void ConnectAfterWork(uv_work_t* req);
+    static NAN_METHOD(Name);
 
-    struct ConnectBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> remoteReference;
-      git_remote * remote;
-      Persistent<Value> directionReference;
-      git_direction direction;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Download(const Arguments& args);
-    static void DownloadWork(uv_work_t* req);
-    static void DownloadAfterWork(uv_work_t* req);
+    static NAN_METHOD(Url);
 
-    struct DownloadBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> remoteReference;
-      git_remote * remote;
-      Persistent<Value> progress_cbReference;
-      git_transfer_progress_callback progress_cb;
-      Persistent<Value> payloadReference;
-      void * payload;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> Connected(const Arguments& args);
-    static Handle<Value> Stop(const Arguments& args);
-    static Handle<Value> Disconnect(const Arguments& args);
-    static void DisconnectWork(uv_work_t* req);
-    static void DisconnectAfterWork(uv_work_t* req);
+    static NAN_METHOD(PushUrl);
 
-    struct DisconnectBaton {
-      uv_work_t request;
-      int error_code;
-      const git_error* error;
-      Persistent<Value> remoteReference;
-      git_remote * remote;
-      Persistent<Function> callback;
-    };
-    static Handle<Value> UpdateTips(const Arguments& args);
-    static Handle<Value> ValidUrl(const Arguments& args);
-    static Handle<Value> SupportedUrl(const Arguments& args);
-    static Handle<Value> CheckCert(const Arguments& args);
-    static Handle<Value> UpdateFetchhead(const Arguments& args);
-    static Handle<Value> SetUpdateFetchhead(const Arguments& args);
-    static Handle<Value> IsValidName(const Arguments& args);
+    static NAN_METHOD(SetUrl);
+
+    static NAN_METHOD(SetPushUrl);
+
+    static NAN_METHOD(Connect);
+
+    static NAN_METHOD(Download);
+
+    static NAN_METHOD(Connected);
+
+    static NAN_METHOD(Stop);
+
+    static NAN_METHOD(Disconnect);
+
+    static NAN_METHOD(UpdateTips);
+
+    static NAN_METHOD(ValidUrl);
+
+    static NAN_METHOD(SupportedUrl);
+
+    static NAN_METHOD(CheckCert);
+
+    static NAN_METHOD(UpdateFetchhead);
+
+    static NAN_METHOD(SetUpdateFetchhead);
+
+    static NAN_METHOD(IsValidName);
+
     git_remote *raw;
 };
 

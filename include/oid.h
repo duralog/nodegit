@@ -28,11 +28,13 @@ class GitOid : public ObjectWrap {
     GitOid(git_oid *raw);
     ~GitOid();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> FromString(const Arguments& args);
-    static Handle<Value> Sha(const Arguments& args);
+    static NAN_METHOD(FromString);
+
+    static NAN_METHOD(Sha);
+
     git_oid *raw;
 };
 

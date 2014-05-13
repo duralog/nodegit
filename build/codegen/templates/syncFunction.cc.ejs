@@ -64,7 +64,7 @@ from_<%- arg.name %>
 -%>
     free(<%= arg.name %>);
 <% } -%>
-    git_error* err;
+    const git_error* err;
     if ((err = giterr_last()) != NULL) {
       NanThrowError(err->message);
     } else {

@@ -1,8 +1,7 @@
 /**
  * This code is auto-generated; unless you know what you're doing, do not modify!
  **/
-#include <v8.h>
-#include <node.h>
+#include <nan.h>
 #include <string.h>
 
 #include "git2.h"
@@ -23,38 +22,42 @@ GitOid::~GitOid() {
 }
 
 void GitOid::Initialize(Handle<v8::Object> target) {
-  HandleScope scope;
+  NanScope();
 
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+  Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
 
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  tpl->SetClassName(String::NewSymbol("Oid"));
+  tpl->SetClassName(NanSymbol("Oid"));
 
   NODE_SET_METHOD(tpl, "fromString", FromString);
   NODE_SET_PROTOTYPE_METHOD(tpl, "sha", Sha);
 
 
-  constructor_template = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(String::NewSymbol("Oid"), constructor_template);
+  //constructor_template = Persistent<Function>::New(tpl->GetFunction());
+  Local<Function> _constructor_template = tpl->GetFunction();
+  NanAssignPersistent(constructor_template, _constructor_template);
+  target->Set(NanSymbol("Oid"), _constructor_template);
 }
 
-Handle<Value> GitOid::New(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitOid::New) {
+  NanScope();
 
   if (args.Length() == 0 || !args[0]->IsExternal()) {
-    return ThrowException(Exception::Error(String::New("git_oid is required.")));
+    NanThrowError("git_oid is required.");
   }
 
-  GitOid* object = new GitOid((git_oid *) External::Unwrap(args[0]));
+  //GitOid* object = new GitOid((git_oid *) External::Unwrap(args[0]));
+  GitOid* object = ObjectWrap::Unwrap<GitOid>(args[0]->ToObject());
   object->Wrap(args.This());
 
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
 Handle<Value> GitOid::New(void *raw) {
-  HandleScope scope;
-  Handle<Value> argv[1] = { External::New((void *)raw) };
-  return scope.Close(GitOid::constructor_template->NewInstance(1, argv));
+  NanEscapableScope();
+  Handle<Value> argv[1] = { NanNew<External>((void *)raw) };
+  return NanEscapeScope(NanNew<Function>(GitOid::constructor_template)->NewInstance(1, argv));
+  //return scope.Close(GitOid::constructor_template->NewInstance(1, argv));
 }
 
 git_oid *GitOid::GetValue() {
@@ -66,16 +69,18 @@ git_oid *GitOid::GetValue() {
  * @param {String} str
  * @return {Oid} out
  */
-Handle<Value> GitOid::FromString(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitOid::FromString) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsString()) {
-    return ThrowException(Exception::Error(String::New("String str is required.")));
+    NanThrowError("String str is required.");
   }
 
   git_oid *out = (git_oid *)malloc(sizeof(git_oid));
+
   const char * from_str;
-            String::Utf8Value str(args[0]->ToString());
-      from_str = strdup(*str);
+            //String::Utf8Value str(args[0]->ToString());
+      //from_str = strdup(*str);
+      from_str = strdup(NanCString(args[0]->ToString(), NULL));
       
   int result = git_oid_fromstr(
     out
@@ -84,10 +89,11 @@ Handle<Value> GitOid::FromString(const Arguments& args) {
   free((void *)from_str);
   if (result != GIT_OK) {
     free(out);
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
@@ -95,16 +101,16 @@ Handle<Value> GitOid::FromString(const Arguments& args) {
     if (out != NULL) {
     to = GitOid::New((void *)out);
   } else {
-    to = Null();
+    to = NanNew(NanNull());
   }
-  return scope.Close(to);
+  NanReturnValue(to);
 }
 
 /**
  * @return {String} result
  */
-Handle<Value> GitOid::Sha(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitOid::Sha) {
+  NanScope();
   
 
   char * result = git_oid_allocfmt(
@@ -112,9 +118,9 @@ Handle<Value> GitOid::Sha(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = String::New(result);
+    to = NanNew<String>(result);
   free(result);
-  return scope.Close(to);
+  NanReturnValue(to);
 }
 
 Persistent<Function> GitOid::constructor_template;

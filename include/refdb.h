@@ -28,7 +28,7 @@ class GitRefDb : public ObjectWrap {
     GitRefDb(git_refdb *raw);
     ~GitRefDb();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
     git_refdb *raw;

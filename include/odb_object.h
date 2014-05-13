@@ -28,13 +28,17 @@ class GitOdbObject : public ObjectWrap {
     GitOdbObject(git_odb_object *raw);
     ~GitOdbObject();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
-    static Handle<Value> Data(const Arguments& args);
-    static Handle<Value> Size(const Arguments& args);
-    static Handle<Value> Type(const Arguments& args);
-    static Handle<Value> Oid(const Arguments& args);
+    static NAN_METHOD(Data);
+
+    static NAN_METHOD(Size);
+
+    static NAN_METHOD(Type);
+
+    static NAN_METHOD(Oid);
+
     git_odb_object *raw;
 };
 

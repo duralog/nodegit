@@ -28,7 +28,7 @@ class GitDiffFindOptions : public ObjectWrap {
     GitDiffFindOptions(git_diff_find_options *raw);
     ~GitDiffFindOptions();
 
-    static Handle<Value> New(const Arguments& args);
+    static NAN_METHOD(New);
 
 
     git_diff_find_options *raw;

@@ -1,8 +1,7 @@
 /**
  * This code is auto-generated; unless you know what you're doing, do not modify!
  **/
-#include <v8.h>
-#include <node.h>
+#include <nan.h>
 #include <string.h>
 
 #include "git2.h"
@@ -30,12 +29,12 @@ GitDiffList::~GitDiffList() {
 }
 
 void GitDiffList::Initialize(Handle<v8::Object> target) {
-  HandleScope scope;
+  NanScope();
 
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+  Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
 
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  tpl->SetClassName(String::NewSymbol("DiffList"));
+  tpl->SetClassName(NanSymbol("DiffList"));
 
   NODE_SET_PROTOTYPE_METHOD(tpl, "merge", Merge);
   NODE_SET_PROTOTYPE_METHOD(tpl, "findSimilar", FindSimilar);
@@ -44,27 +43,31 @@ void GitDiffList::Initialize(Handle<v8::Object> target) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "patch", Patch);
 
 
-  constructor_template = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(String::NewSymbol("DiffList"), constructor_template);
+  //constructor_template = Persistent<Function>::New(tpl->GetFunction());
+  Local<Function> _constructor_template = tpl->GetFunction();
+  NanAssignPersistent(constructor_template, _constructor_template);
+  target->Set(NanSymbol("DiffList"), _constructor_template);
 }
 
-Handle<Value> GitDiffList::New(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitDiffList::New) {
+  NanScope();
 
   if (args.Length() == 0 || !args[0]->IsExternal()) {
-    return ThrowException(Exception::Error(String::New("git_diff_list is required.")));
+    NanThrowError("git_diff_list is required.");
   }
 
-  GitDiffList* object = new GitDiffList((git_diff_list *) External::Unwrap(args[0]));
+  //GitDiffList* object = new GitDiffList((git_diff_list *) External::Unwrap(args[0]));
+  GitDiffList* object = ObjectWrap::Unwrap<GitDiffList>(args[0]->ToObject());
   object->Wrap(args.This());
 
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
 Handle<Value> GitDiffList::New(void *raw) {
-  HandleScope scope;
-  Handle<Value> argv[1] = { External::New((void *)raw) };
-  return scope.Close(GitDiffList::constructor_template->NewInstance(1, argv));
+  NanEscapableScope();
+  Handle<Value> argv[1] = { NanNew<External>((void *)raw) };
+  return NanEscapeScope(NanNew<Function>(GitDiffList::constructor_template)->NewInstance(1, argv));
+  //return scope.Close(GitDiffList::constructor_template->NewInstance(1, argv));
 }
 
 git_diff_list *GitDiffList::GetValue() {
@@ -75,11 +78,12 @@ git_diff_list *GitDiffList::GetValue() {
 /**
  * @param {DiffList} from
  */
-Handle<Value> GitDiffList::Merge(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitDiffList::Merge) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsObject()) {
-    return ThrowException(Exception::Error(String::New("DiffList from is required.")));
+    NanThrowError("DiffList from is required.");
   }
+
 
   const git_diff_list * from_from;
             from_from = ObjectWrap::Unwrap<GitDiffList>(args[0]->ToObject())->GetValue();
@@ -89,24 +93,26 @@ Handle<Value> GitDiffList::Merge(const Arguments& args) {
     , from_from
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @param {DiffFindOptions} options
  */
-Handle<Value> GitDiffList::FindSimilar(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitDiffList::FindSimilar) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsObject()) {
-    return ThrowException(Exception::Error(String::New("DiffFindOptions options is required.")));
+    NanThrowError("DiffFindOptions options is required.");
   }
+
 
   git_diff_find_options * from_options;
             from_options = ObjectWrap::Unwrap<GitDiffFindOptions>(args[0]->ToObject())->GetValue();
@@ -116,21 +122,22 @@ Handle<Value> GitDiffList::FindSimilar(const Arguments& args) {
     , from_options
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /**
  * @return {Number} result
  */
-Handle<Value> GitDiffList::Size(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitDiffList::Size) {
+  NanScope();
   
 
   size_t result = git_diff_num_deltas(
@@ -138,8 +145,8 @@ Handle<Value> GitDiffList::Size(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = Uint32::New(result);
-  return scope.Close(to);
+    to = NanNew<Uint32>(result);
+  NanReturnValue(to);
 }
 
 /**
@@ -147,18 +154,20 @@ Handle<Value> GitDiffList::Size(const Arguments& args) {
  * @param {Number} type
  * @return {Number} result
  */
-Handle<Value> GitDiffList::NumDeltasOfType(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitDiffList::NumDeltasOfType) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsObject()) {
-    return ThrowException(Exception::Error(String::New("DiffList diff is required.")));
+    NanThrowError("DiffList diff is required.");
   }
   if (args.Length() == 1 || !args[1]->IsInt32()) {
-    return ThrowException(Exception::Error(String::New("Number type is required.")));
+    NanThrowError("Number type is required.");
   }
+
 
   git_diff_list * from_diff;
             from_diff = ObjectWrap::Unwrap<GitDiffList>(args[0]->ToObject())->GetValue();
-        git_delta_t from_type;
+      
+  git_delta_t from_type;
             from_type = (git_delta_t)   args[1]->ToInt32()->Value();
       
   size_t result = git_diff_num_deltas_of_type(
@@ -167,8 +176,8 @@ Handle<Value> GitDiffList::NumDeltasOfType(const Arguments& args) {
   );
 
   Handle<Value> to;
-    to = Uint32::New(result);
-  return scope.Close(to);
+    to = NanNew<Uint32>(result);
+  NanReturnValue(to);
 }
 
 /**
@@ -176,14 +185,15 @@ Handle<Value> GitDiffList::NumDeltasOfType(const Arguments& args) {
  * @return {Patch} patch_out
  * @return {Delta} delta_out
  */
-Handle<Value> GitDiffList::Patch(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(GitDiffList::Patch) {
+  NanScope();
     if (args.Length() == 0 || !args[0]->IsUint32()) {
-    return ThrowException(Exception::Error(String::New("Number idx is required.")));
+    NanThrowError("Number idx is required.");
   }
 
   git_diff_patch * patch_out = 0;
   const git_diff_delta * delta_out = 0;
+
   size_t from_idx;
             from_idx = (size_t)   args[0]->ToUint32()->Value();
       
@@ -194,21 +204,22 @@ Handle<Value> GitDiffList::Patch(const Arguments& args) {
     , from_idx
   );
   if (result != GIT_OK) {
-    if (giterr_last()) {
-      return ThrowException(Exception::Error(String::New(giterr_last()->message)));
+    const git_error* err;
+    if ((err = giterr_last()) != NULL) {
+      NanThrowError(err->message);
     } else {
-      return ThrowException(Exception::Error(String::New("Unkown Error")));
+      NanThrowError("Unknown Error");
     }
   }
 
-  Handle<Object> toReturn = Object::New();
+  Handle<Object> toReturn = NanNew<Object>();
   Handle<Value> to;
       if (patch_out != NULL) {
     to = GitPatch::New((void *)patch_out);
   } else {
-    to = Null();
+    to = NanNew(NanNull());
   }
-    toReturn->Set(String::NewSymbol("patch"), to);
+    toReturn->Set(NanSymbol("patch"), to);
 
       if (delta_out != NULL) {
     delta_out = (const git_diff_delta * )git_diff_delta_dup(delta_out);
@@ -216,11 +227,11 @@ Handle<Value> GitDiffList::Patch(const Arguments& args) {
   if (delta_out != NULL) {
     to = GitDelta::New((void *)delta_out);
   } else {
-    to = Null();
+    to = NanNew(NanNull());
   }
-    toReturn->Set(String::NewSymbol("delta"), to);
+    toReturn->Set(NanSymbol("delta"), to);
 
-  return scope.Close(toReturn);
+  NanReturnValue(toReturn);
 }
 
 Persistent<Function> GitDiffList::constructor_template;
